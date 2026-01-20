@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG Helper Hub</title>
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --accent: #ff9800;
+            --text-main: #e0e0e0;
+            --card-w: 320px;
+            --card-h: 320px;
+            --transition-speed: 0.6s;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* HUB STYLING */
+        #hub-ui {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: 10px;
+            color: var(--accent);
+            margin-bottom: 60px;
+            text-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .cards-container {
+            display: flex;
+            gap: 50px;
+            perspective: 1500px; 
+        }
+
+        .card-anchor {
+            width: var(--card-w);
+            height: var(--card-h);
+            position: relative;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card-anchor:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; 
+            -webkit-backface-visibility: hidden;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-front h2 {
+            font-size: 2.2rem;
+            letter-spacing: 4px;
+            margin: 0;
+        }
+        .card-front span {
+            color: var(--accent);
+            font-size: 0.8rem;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #000;
+        }
+
+        .iframe-preview {
+            width: 1100px;
+            height: 800px;
+            border: none;
+            pointer-events: none; 
+            transform: scale(0.28);
+            transform-origin: top left;
+            position: absolute;
+            top: 20px;
+            left: 6px;
+        }
+
+        /* FULLSCREEN VIEWPORT */
+        .fullscreen-view {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .fullscreen-view.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .back-bar {
+            height: 50px;
+            background: #111;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #222;
+            position: relative; /* Added to allow absolute centering of the title */
+        }
+
+        /* --- NEW TITLE STYLING --- */
+        #tool-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: none;
+            font-size: 1.3rem;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: 0.2s;
+            font-weight: bold;
+            z-index: 2; /* Ensures button stays clickable above the absolute title */
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            color: black;
+        }
+
+        iframe.full-frame {
+            width: 100%;
+            flex: 1;
+            border: none;
+        }
+
+        .blur-out {
+            filter: blur(10px);
+            transform: scale(0.9);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hub-ui">
+        <h1>TerraFirmaGreg Helper</h1>
+        
+        <div class="cards-container">
+            <div class="card-anchor">
+                <div class="card-inner" onclick="expandTool('alloy')">
+                    <div class="card-face card-front">
+                        <h2>ALLOY</h2>
+                        <span>RATIO CALCULATOR</span>
+                    </div>
+                    <div class="card-back card-face">
+                        <iframe src="alloy.html" class="iframe-preview" scrolling="no"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-anchor">
+                <div class="card-inner" onclick="expandTool('anvil')">
+                    <div class="card-face card-front">
+                        <h2>ANVIL</h2>
+                        <span>SMITHING SEQUENCER</span>
+                    </div>
+                    <div class="card-back card-face">
+                        <iframe src="anvil.html" class="iframe-preview" scrolling="no"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tool-view" class="fullscreen-view">
+        <div class="back-bar">
+            <button class="back-btn" onclick="shrinkTool()">← EXIT TO HUB</button>
+            <span id="tool-title"></span>
+        </div>
+        <iframe id="active-frame" class="full-frame"></iframe>
+    </div>
+
+    <script>
+        const hub = document.getElementById('hub-ui');
+        const toolView = document.getElementById('tool-view');
+        const activeFrame = document.getElementById('active-frame');
+        const toolTitle = document.getElementById('tool-title');
+
+        function expandTool(name) {
+            hub.classList.add('blur-out');
+            activeFrame.src = name + ".html";
+
+            // Logic to update the title text
+            if (name === 'alloy') {
+                toolTitle.textContent = "TerraFirmaGreg Alloy Calculator";
+            } else if (name === 'anvil') {
+                toolTitle.textContent = "TerraFirmaGreg Anvil Calculator";
+            }
+
+            setTimeout(() => {
+                toolView.classList.add('active');
+            }, 100);
+        }
+
+        function shrinkTool() {
+            toolView.classList.remove('active');
+            hub.classList.remove('blur-out');
+            setTimeout(() => {
+                activeFrame.src = "";
+                toolTitle.textContent = "";
+            }, 100);
+        }
+    </script>
+</body>
+</html>

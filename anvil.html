@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG Anvil Calculator</title>
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #ff9800;
+            --accent-glow: rgba(255, 152, 0, 0.3);
+            --text-main: #e0e0e0;
+            --text-dim: #b0b0b0;
+            --border: #333;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        /* Prevent global page scroll */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        select,
+        input[type="file"] {
+            background: #2a2a2a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        select:disabled {
+            opacity: 0.5;
+        }
+
+        /* DASHBOARD LAYOUT */
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+            /* Critical for internal scrolling */
+        }
+
+        .left-column {
+            flex: 0 0 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        .right-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        h3 {
+            margin: 0 0 5px 0;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        h4 {
+            margin: 5px 0 8px 0;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .forging-card {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .forging-card .calc-btn {
+            margin-top: 15px;
+        }
+
+        .craft-top-bar {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-top: 2px;
+            flex-wrap: wrap;
+        }
+
+        .craft-control {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+
+        /* INPUTS */
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input[type="number"] {
+            background: #2a2a2a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 1.4rem;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* HIT SELECTION */
+        .hit-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .hit {
+            width: 100%;
+            aspect-ratio: 1/1;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: #2a2a2a;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            image-rendering: pixelated;
+        }
+
+        .hit:hover {
+            transform: scale(1.08);
+            border-color: var(--accent);
+        }
+
+        .selected-hits {
+            display: flex;
+            gap: 8px;
+            min-height: 52px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+        }
+
+        .hit.active-select {
+            border-color: #ae00ff;
+            width: 54px;
+            height: 54px;
+            box-shadow: 0 0 10px rgba(174, 0, 255, 0.3);
+        }
+
+        /* BUTTON */
+        .calc-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: linear-gradient(to bottom, #ff9800, #e65100);
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: auto;
+            box-shadow: 0 4px 0 #bf360c;
+        }
+
+        .calc-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #bf360c;
+        }
+
+        /* RESULTS */
+        .visual-output {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .visual-output img {
+            width: 50px;
+            height: 50px;
+            border: 1px solid var(--border);
+            background: #222;
+            border-radius: 4px;
+        }
+
+        .scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            background: #000;
+            border-left: 4px solid var(--success);
+            border-radius: 4px;
+        }
+
+        pre {
+            color: var(--success);
+            padding: 20px;
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .error-text {
+            color: var(--error);
+            border-left-color: var(--error);
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            margin-top: 2px;
+        }
+
+        .visual-step {
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .visual-step.done {
+            border: 1px solid var(--success);
+            opacity: 0.45;
+        }
+
+        .visual-step.done::after {
+            content: "✓";
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 18px;
+            color: var(--success);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <div class="craft-top-bar">
+                <div class="craft-control">
+                    <select id="ingotSelect"></select>
+                </div>
+
+                <div class="craft-control">
+                    <select id="craftSelect" disabled></select>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="left-column">
+                <!-- TARGET CONFIGURATION -->
+                <div class="card">
+                    <h3>Target Configuration</h3>
+                    <div class="input-wrapper">
+                        <p class="helper-text">Enter the target red arrow position (0-147):</p>
+                        <input type="number" id="target" value="80">
+                    </div>
+                </div>
+
+                <!-- FORGING RULES -->
+                <div class="card forging-card">
+                    <h3>Forging Rules</h3>
+                    <h4>Select Last Hits (From last hit to the not last hit)</h4>
+
+                    <div class="hit-grid" id="hitGrid"></div>
+
+                    <h4>Selected Last Hits (Press to remove)</h4>
+                    <div class="selected-hits" id="selectedHits"></div>
+
+                    <button class="calc-btn" onclick="calculate()">Calculate Sequence</button>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="card results-card">
+                    <h3>Optimal Sequence</h3>
+                    <h4>Hit Sequence (Visual)</h4>
+                    <div id="visualOutput" class="visual-output"></div>
+                    <h4>Step-by-Step Result</h4>
+                    <div class="scroll-container" id="resultBox">
+                        <pre id="output">Waiting for input... Select your last hits and click Calculate.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="anvil-data" type="application/json">
+    {"Crafts":{"Axe Head":"+13 -3 +2","Javelin Head":"-15 -3 -3","Chisel Head":"-15 -3 -3","Shovel Head":"-3 +2","Pickaxe Head":"-15 +7 +2","Tree Tap":"+13 +13 -3","Rod":"-15","File Head":"+2 +7 +13","Hammer Head":"+16 +2","Knife Head":"-15 +7 +2","Prospector's Pick Head":"+7 -15 +2","Scythe Head":"-15 +7 +2","Screwdriver Tip":"-3 -3 -15","Butchery Knife Head":"+7 +7 +2","Unfinished Lamp":"-15 +7 +7","Hoe Head":"+7 -3 +2","Tong Part":"+7 -15 -3","Chain":"-15 -3 -3","Mattock Head":"+7 +2 +2","Saw Head":"-3 -3","Gear":"-15 +16 -3","Plate":"-3 -3 -3","High Carbon Steel":"-3 -3 -3","Spade Head":"-3 +2","Mace Head":"+7 +16 -3","Wire Cutter Head":"-3 -3 -15","Wrench Tip":"-3 -3 -15","Mining Hammer Head":"+16 +2","Sword Head":"-15 +7 +2","Cleat":"+7 +7 +7","Support":"+16 +13","Oarlock":"-3 -3 +7","Cannonball":"-3 +7 +7","Unfinished Sextant":"+7 +7 -3"},"Copper":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head"],"Cast Iron":["Rod","Gear"],"Cast Iron Double":["Plate"],"Gold":["Rod","Tong Part"],"Pig iron":["High Carbon Steel"],"Black Steel":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head"],"Black Steel Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Blue Steel":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head"],"Blue Steel Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Red Steel":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head"],"Red Steel Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"High Carbon Steel":["Plate"],"High Carbon Black Steel":["Plate"],"High Carbon Blue Steel":["Plate"],"High Carbon Red Steel":["Plate"],"Zinc Double":["Plate"],"Black Bronze Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Rose Gold Double":["Plate"],"Silver Double":["Plate"],"Sterling Silver Double":["Plate"],"Copper Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Steel Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head","Cleat","Support"],"Gold Double":["Plate"],"Wrought Iron Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head","Oarlock","Cannonball"],"Brass Double":["Plate","Unfinished Sextant"],"Bronze Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Bismuth Double":["Plate"],"Bismuth Bronze Double":["Spade Head","Mace Head","Plate","Wire Cutter Head","Wrench Tip","Mining Hammer Head","Sword Head"],"Black Bronze":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head","Gear"],"Rose Gold":["Rod","Tong Part"],"Silver":["Rod","Tong Part"],"Sterling Silver":["Rod","Tong Part"],"Steel":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head","Gear"],"Wrought Iron":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head","Gear"],"Bronze":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head","Gear"],"Bismuth":["Rod","Tong Part"],"Bismuth Bronze":["Axe Head","Javelin Head","Chisel Head","Shovel Head","Pickaxe Head","Tree Tap","Rod","File Head","Hammer Head","Knife Head","Prospector's Pick Head","Scythe Head","Screwdriver Tip","Butchery Knife Head","Unfinished Lamp","Hoe Head","Tong Part","Chain","Mattock Head","Saw Head","Gear"],"Zinc":["Rod","Tong Part"],"Brass":["Rod","Tong Part","Gear"]}
+</script>
+
+
+    <script>
+
+        const ANVIL_DATA = JSON.parse(
+            document.getElementById("anvil-data").textContent
+        );
+
+        const HIT_VALUES = {
+            "Light Hit": -3,
+            "Medium Hit": -6,
+            "Hard Hit": -9,
+            "Draw": -15,
+            "Punch": 2,
+            "Bend": 7,
+            "Upset": 13,
+            "Shrink": 16
+        };
+
+        const HIT_SPRITES = {
+            "Light Hit": "sprites/Anvil/light_hit.png",
+            "Medium Hit": "sprites/Anvil/medium_hit.png",
+            "Hard Hit": "sprites/Anvil/hard_hit.png",
+            "Draw": "sprites/Anvil/draw.png",
+            "Punch": "sprites/Anvil/punch.png",
+            "Bend": "sprites/Anvil/bend.png",
+            "Upset": "sprites/Anvil/upset.png",
+            "Shrink": "sprites/Anvil/shrink.png"
+        };
+
+        const POSITIVE_HITS = [
+            { name: "Shrink", value: 16 },
+            { name: "Upset", value: 13 },
+            { name: "Bend", value: 7 },
+            { name: "Punch", value: 2 }
+        ];
+
+        const selectedHits = [];
+        const hitGrid = document.getElementById("hitGrid");
+        const selectedHitsDiv = document.getElementById("selectedHits");
+        const outputPre = document.getElementById("output");
+        const visualOutput = document.getElementById("visualOutput");
+        const resultBox = document.getElementById("resultBox");
+
+        const ingotSelect = document.getElementById("ingotSelect");
+        const craftSelect = document.getElementById("craftSelect");
+
+        let currentStep = 0;
+
+        function buildHitGrid() {
+            hitGrid.innerHTML = "";
+            Object.keys(HIT_VALUES).forEach(hit => {
+                const img = document.createElement("img");
+                img.className = "hit";
+                img.src = HIT_SPRITES[hit];
+                img.title = `${hit} (${HIT_VALUES[hit]})`;
+                img.onclick = () => { if (selectedHits.length < 3) { selectedHits.push(hit); renderSelectedHits(); } };
+                hitGrid.appendChild(img);
+            });
+
+        }
+
+        function renderSelectedHits() {
+            selectedHitsDiv.innerHTML = "";
+            selectedHits.forEach((hit, index) => {
+                const img = document.createElement("img");
+                img.className = "hit active-select";
+                img.src = HIT_SPRITES[hit];
+                img.title = "Click to remove";
+                img.onclick = () => { selectedHits.splice(index, 1); renderSelectedHits(); };
+                selectedHitsDiv.appendChild(img);
+            });
+        }
+
+        function findHitSequence(target, hits, maxDepth = 50) {
+            const result = [];
+            function dfs(remaining, depth) {
+                if (remaining === 0) return true;
+                if (remaining < 0 || depth >= maxDepth) return false;
+                for (const hit of hits) {
+                    if (hit.value <= remaining) {
+                        result.push(hit.name);
+                        if (dfs(remaining - hit.value, depth + 1)) return true;
+                        result.pop();
+                    }
+                }
+                return false;
+            }
+            return dfs(target, 0) ? result : null;
+        }
+
+        function calculate() {
+            const target = parseInt(document.getElementById("target").value, 10);
+            resultBox.classList.remove('error-text');
+            output.classList.remove('error-text');
+            outputPre.textContent = "";
+            visualOutput.innerHTML = "";
+
+            if (isNaN(target) || target < 0 || target > 147) {
+                outputPre.textContent = "Error: Target must be between 0 and 147.";
+                resultBox.classList.add('error-text');
+                output.classList.add('error-text');
+                return;
+            }
+
+            const lastHitsToApply = [...selectedHits].reverse();
+            const lastValueSum = lastHitsToApply.reduce((sum, hit) => sum + HIT_VALUES[hit], 0);
+            const targetBeforeLast = target - lastValueSum;
+
+            if (targetBeforeLast < 0) {
+                outputPre.textContent = "Error: Requirements exceed the target value.";
+                resultBox.classList.add('error-text');
+                output.classList.add('error-text');
+                return;
+            }
+
+            const preHits = findHitSequence(targetBeforeLast, POSITIVE_HITS);
+            if (!preHits) {
+                outputPre.textContent = "Error: No valid sequence found for this combination.";
+                resultBox.classList.add('error-text');
+                output.classList.add('error-text');
+                return;
+            }
+
+            let sequence = [...preHits, ...lastHitsToApply];
+            let running = 0;
+            let text = `Target Value: ${target}\nFinal Value:  ${target}\n`;
+            text += "============================\n\n";
+
+            sequence.forEach((hit, i) => {
+                running += HIT_VALUES[hit];
+
+                text += `${(i + 1).toString().padStart(2, '0')}. ${hit.padEnd(12)} (${HIT_VALUES[hit]}) -> ${running}\n`;
+
+                const img = document.createElement("img");
+                img.src = HIT_SPRITES[hit];
+                img.title = `Step ${i + 1}: ${hit}`;
+                img.className = "visual-step";
+
+                img.onclick = () => toggleStep(i);
+
+                visualOutput.appendChild(img);
+            });
+
+            outputPre.textContent = text;
+        }
+
+        function toggleStep(index) {
+            const steps = document.querySelectorAll(".visual-step");
+
+            if(steps[index].classList.value.endsWith("done") && (index + 1 == steps.length || !steps[index + 1].classList.value.endsWith("done"))){
+                steps[index].classList.remove("done");
+                currentStep = index - 1;
+            } else {
+                for (let i = 0; i <= index; i++) {
+                    steps[i].classList.add("done");
+                }
+                for (let i = index + 1; i < steps.length; i++) {
+                    steps[i].classList.remove("done");
+                }
+                currentStep = index + 1;
+            }
+        }
+
+        function initCraftUI() {
+            ingotSelect.innerHTML = `<option value="">Select Ingot</option>`;
+
+            Object.keys(ANVIL_DATA)
+                .filter(k => k !== "Crafts")
+                .sort((a, b) => a.localeCompare(b))
+                .forEach(ingot => {
+                    ingotSelect.innerHTML += `<option>${ingot} Ingot</option>`;
+                });
+        }
+
+        ingotSelect.onchange = () => {
+            craftSelect.innerHTML = `<option value="">Select Craft</option>`;
+            craftSelect.disabled = !ingotSelect.value;
+
+            if (!ingotSelect.value) return;
+
+            ANVIL_DATA[ingotSelect.value.split(' Ingot')[0]]
+                .slice()
+                .sort((a, b) => a.localeCompare(b))
+                .forEach(craft => {
+                    craftSelect.innerHTML += `<option>${ingotSelect.value.split(' Ingot')[0]} ${craft}</option>`;
+                });
+        };
+
+        craftSelect.onchange = () => {
+            const craft = craftSelect.value.split(ingotSelect.value.split(' Ingot')[0] + ' ')[1];
+            if (!craft) return;
+
+            selectedHits.length = 0;
+
+            ANVIL_DATA.Crafts[craft].split(" ").forEach(v => {
+                const value = parseInt(v, 10);
+                const hit = Object.entries(HIT_VALUES)
+                    .find(([_, val]) => val === value);
+                if (hit) selectedHits.push(hit[0]);
+            });
+
+            renderSelectedHits();
+        };
+
+        initCraftUI();
+        buildHitGrid();
+    </script>
+
+</body>
+
+</html>

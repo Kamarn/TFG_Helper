@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG Alloy Calculator</title>
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #ff9800;
+            --accent-glow: rgba(255, 152, 0, 0.3);
+            --text-main: #e0e0e0;
+            --text-dim: #b0b0b0;
+            --border: #333;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0; 
+        }
+
+        .left-column {
+            flex: 0 0 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .right-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h3 {
+            margin: 0 0 12px 0;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+        }
+
+        /* ALLOY GRID */
+        .alloy-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 5px;
+            overflow-y: auto;
+        }
+
+        .alloy-item {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .alloy-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            background-color: #2a2a2a;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            background-size: 32px;
+            background-repeat: no-repeat;
+            background-position: center;
+            image-rendering: pixelated;
+        }
+
+        .alloy-item:hover .alloy-icon {
+            transform: scale(1.08);
+            border-color: var(--accent);
+        }
+
+        .alloy-item.selected .alloy-icon {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background-color: #333;
+        }
+
+        .alloy-name {
+            font-size: 10px;
+            margin-top: 5px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        /* INPUTS - NO ARROWS */
+        input[type="number"] {
+            background: #2a2a2a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 1.4rem;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* MATERIAL LIST & SHAKE */
+        .materials-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 10px 5px 5px; /* Increased top padding for first notice */
+        }
+
+        .material {
+            margin-bottom: 12px;
+            background: rgba(0,0,0,0.25);
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent);
+            position: relative;
+        }
+
+        .material.invalid {
+            border-left-color: var(--error);
+            animation: shake 0.28s ease-in-out 2;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0) }
+            25% { transform: translateX(-6px) }
+            50% { transform: translateX(6px) }
+            75% { transform: translateX(-3px) }
+            100% { transform: translateX(0) }
+        }
+
+        .material-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .material-name {
+            font-weight: bold;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .lock {
+            cursor: pointer;
+            font-size: 1.1rem;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+            user-select: none;
+        }
+
+        .lock.locked { opacity: 1; }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .material-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-family: 'Consolas', monospace;
+        }
+
+        .material.locked {
+            border-left-color: #666 !important;
+        }
+
+        .value { color: var(--success); font-weight: bold; }
+
+        /* WARNING NOTICES */
+        .notice {
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: var(--error);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .summary-card {
+            margin-top: 15px;
+            background: #000;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .summary-text {
+            font-family: 'Consolas', monospace;
+            font-size: 1.1rem;
+            color: var(--success);
+            margin: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="dashboard">
+        <div class="left-column">
+            <div class="card">
+                <h3>Target Configuration</h3>
+                <p class="helper-text">Desired number of ingots:</p>
+                <input type="number" id="ingots" min="1" value="1">
+            </div>
+
+            <div class="card" style="flex: 1; min-height: 0;">
+                <h3>Select Alloy</h3>
+                <div class="alloy-grid" id="alloyGrid"></div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="card" style="flex: 1; min-height: 0;">
+                <h3>Optimal Proportions</h3>
+                <div id="materials" class="materials-container"></div>
+
+                <div class="summary-card">
+                    <p class="summary-text">TOTAL VOLUME: <span id="totalMb">144</span> mB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const INGOT_MB = 144;
+const ALLOYS = {
+    Bronze: { Copper:[70,80], Tin:[20,30] },
+    Bismuth_Bronze: { Copper:[50,65], Zinc:[20,30], Bismuth:[10,20] },
+    Black_Bronze: { Copper:[50,70], Silver:[10,25], Gold:[10,25] },
+    Brass: { Copper:[70,80], Zinc:[20,30] },
+    Rose_Gold: { Copper:[15,30], Gold:[70,85] },
+    Sterling_Silver: { Copper:[20,40], Silver:[60,80] },
+    Weak_Steel: { Steel:[50,70], Nickel:[15,25], Black_Bronze:[15,25] },
+    Weak_Blue_Steel: { Black_Steel:[50,55], Steel:[20,25], Bismuth_Bronze:[10,15], Sterling_Silver:[10,15] },
+    Weak_Red_Steel: { Black_Steel:[50,55], Steel:[20,25], Brass:[10,15], Rose_Gold:[10,15] }
+};
+
+const alloyGrid = document.getElementById('alloyGrid');
+const materialsDiv = document.getElementById('materials');
+const ingotInput = document.getElementById('ingots');
+const totalMbSpan = document.getElementById('totalMb');
+
+let currentAlloy = null;
+let state = {}; 
+let invalidSliders = new Set();
+
+Object.keys(ALLOYS).forEach(name => {
+    const item = document.createElement('div');
+    item.className = 'alloy-item';
+    const icon = document.createElement('div');
+    icon.className = 'alloy-icon';
+    icon.style.backgroundImage = `url("sprites/Alloys/${name}.png")`;
+    const label = document.createElement('div');
+    label.className = 'alloy-name';
+    label.textContent = name.replaceAll('_',' ');
+    item.appendChild(icon);
+    item.appendChild(label);
+    item.onclick = () => selectAlloy(name, item);
+    alloyGrid.appendChild(item);
+});
+
+function selectAlloy(name, itemEl) {
+    document.querySelectorAll('.alloy-item').forEach(i => i.classList.remove('selected'));
+    itemEl.classList.add('selected');
+    currentAlloy = name;
+    initializeSliders();
+}
+
+function initializeSliders() {
+    if (!currentAlloy) return;
+    const alloy = ALLOYS[currentAlloy];
+    state = {};
+    materialsDiv.innerHTML = '';
+    const keys = Object.keys(alloy);
+    let sum = 0;
+    keys.forEach(k => {
+        const [min, max] = alloy[k];
+        const avg = Math.floor((min + max) / 2);
+        state[k] = { min, max, percent: avg, locked: false };
+        sum += avg;
+    });
+    state[keys[keys.length - 1]].percent += (100 - sum);
+
+    keys.forEach(k => {
+        const div = document.createElement('div');
+        div.className = 'material';
+        div.dataset.name = k;
+        div.innerHTML = `
+            <div class="material-header">
+                <span class="material-name">${k.replaceAll('_',' ')}</span>
+                <span class="lock">🔓</span>
+            </div>
+            <input type="range" min="${state[k].min}" max="${state[k].max}" value="${state[k].percent}">
+            <div class="material-footer">
+                <span>Range: ${state[k].min}%-${state[k].max}%</span>
+                <span class="value"></span>
+            </div>`;
+        materialsDiv.appendChild(div);
+        const slider = div.querySelector('input[type="range"]');
+        const lockEl = div.querySelector('.lock');
+        slider.oninput = () => onSliderChange(k);
+        lockEl.onclick = () => toggleLock(k, div);
+    });
+    refreshUI();
+}
+
+function toggleLock(key, divEl) {
+    state[key].locked = !state[key].locked;
+    const lock = divEl.querySelector('.lock');
+    lock.textContent = state[key].locked ? '🔒' : '🔓';
+    lock.classList.toggle('locked', state[key].locked);
+    divEl.classList.toggle('locked', state[key].locked);
+    divEl.querySelector('input[type="range"]').disabled = state[key].locked;
+}
+
+function onSliderChange(changedKey) {
+    const prev = JSON.parse(JSON.stringify(state));
+    const sliderEl = document.querySelector(`[data-name="${changedKey}"] input`);
+    const newValue = parseInt(sliderEl.value, 10);
+    
+    state[changedKey].percent = newValue;
+
+    if (!tryRebalance(changedKey)) {
+        state = prev;
+        if (!invalidSliders.has(changedKey)) {
+            invalidSliders.add(changedKey);
+            showBlockedFeedback(changedKey, "REACHED LIMIT");
+        }
+    } else {
+        if (invalidSliders.has(changedKey)) {
+            clearBlockedFeedback(changedKey);
+            invalidSliders.delete(changedKey);
+        }
+    }
+    refreshUI();
+}
+
+/**
+ * SMART REBALANCE LOGIC:
+ * 1. Calculate how much percentage is missing/extra to hit 100% total.
+ * 2. Identify all "Adjustable" sliders (unlocked and NOT the one being moved).
+ * 3. Distribute the difference across ALL adjustable sliders proportionally
+ * based on how much "headroom" (to max) or "floor" (to min) they have left.
+ */
+function tryRebalance(changedKey) {
+    const adjustable = [];
+    let fixedSum = state[changedKey].percent;
+
+    for (const k in state) {
+        if (k !== changedKey) {
+            if (state[k].locked) fixedSum += state[k].percent;
+            else adjustable.push(k);
+        }
+    }
+
+    let diff = 100 - (fixedSum + adjustable.reduce((acc, k) => acc + state[k].percent, 0));
+    
+    if (diff === 0) return true;
+
+    // First, check if a solution is even theoretically possible
+    let minSum = 0, maxSum = 0;
+    adjustable.forEach(k => { minSum += state[k].min; maxSum += state[k].max; });
+    const targetAdjustableSum = 100 - fixedSum;
+    if (targetAdjustableSum < minSum || targetAdjustableSum > maxSum) return false;
+
+    // Iterative distribution to handle multiple sliders hitting limits
+    let attempts = 0;
+    while (Math.abs(diff) > 0 && attempts < 10) {
+        let totalRoom = 0;
+        
+        // Calculate total available room in the direction of change
+        adjustable.forEach(k => {
+            const room = (diff > 0) ? (state[k].max - state[k].percent) : (state[k].percent - state[k].min);
+            totalRoom += room;
+        });
+
+        if (totalRoom === 0 && Math.abs(diff) > 0) return false; // No more room to move anything
+
+        let distributedThisTurn = 0;
+        adjustable.forEach(k => {
+            const room = (diff > 0) ? (state[k].max - state[k].percent) : (state[k].percent - state[k].min);
+            if (room > 0) {
+                const share = Math.round(diff * (room / totalRoom)) || (diff > 0 ? 1 : -1);
+                const actualChange = (diff > 0) ? Math.min(share, room, diff) : Math.max(share, -room, diff);
+                
+                state[k].percent += actualChange;
+                distributedThisTurn += actualChange;
+                diff -= actualChange;
+            }
+        });
+        
+        if (distributedThisTurn === 0) break;
+        attempts++;
+    }
+
+    return diff === 0;
+}
+
+function showBlockedFeedback(key, msg) {
+    const row = document.querySelector(`[data-name="${key}"]`);
+    row.classList.remove('invalid');
+    void row.offsetWidth; // Reflow trigger for shake
+    row.classList.add('invalid');
+    let notice = row.querySelector('.notice') || document.createElement('div');
+    notice.className = 'notice';
+    notice.textContent = msg;
+    row.appendChild(notice);
+}
+
+function clearBlockedFeedback(key) {
+    const row = document.querySelector(`[data-name="${key}"]`);
+    row.classList.remove('invalid');
+    const notice = row.querySelector('.notice');
+    if (notice) notice.remove();
+}
+
+function refreshUI() {
+    const total = parseInt(ingotInput.value || 1, 10) * INGOT_MB;
+    totalMbSpan.textContent = total;
+    let assignedMb = 0;
+    let cumulativePercent = 0;
+
+    Object.keys(state).forEach((k) => {
+        const row = document.querySelector(`[data-name="${k}"]`);
+        cumulativePercent += state[k].percent;
+        const idealTotalSoFar = Math.round((cumulativePercent / 100) * total);
+        const mb = idealTotalSoFar - assignedMb;
+        assignedMb += mb;
+        row.querySelector('.value').textContent = `${mb} mB (${state[k].percent}%)`;
+        row.querySelector('input[type="range"]').value = state[k].percent;
+    });
+}
+
+ingotInput.oninput = refreshUI;
+
+window.onload = () => {
+    const first = alloyGrid.querySelector('.alloy-item');
+    if (first) first.click();
+};
+</script>
+</body>
+</html>
