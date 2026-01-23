@@ -29,27 +29,34 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 30px;
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             letter-spacing: 10px;
             color: var(--accent);
-            margin-bottom: 60px;
+            margin: 0;
             text-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+            text-align: center;
         }
 
         .cards-container {
             display: flex;
-            gap: 50px;
-            perspective: 1500px; 
+            gap: clamp(20px, 5vw, 50px);
+            perspective: 1500px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .card-anchor {
-            width: var(--card-w);
-            height: var(--card-h);
+            width: clamp(280px, 40vw, var(--card-w));
+            height: clamp(280px, 40vw, var(--card-h));
             position: relative;
+            min-width: 250px;
         }
 
         .card-inner {
@@ -61,15 +68,17 @@
             cursor: pointer;
         }
 
-        .card-anchor:hover .card-inner {
-            transform: rotateY(180deg);
+        @media (hover: hover) {
+            .card-anchor:hover .card-inner {
+                transform: rotateY(180deg);
+            }
         }
 
         .card-face {
             position: absolute;
             width: 100%;
             height: 100%;
-            backface-visibility: hidden; 
+            backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             border-radius: 12px;
             border: 1px solid #333;
@@ -83,13 +92,13 @@
         }
 
         .card-front h2 {
-            font-size: 2.2rem;
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
             letter-spacing: 4px;
             margin: 0;
         }
         .card-front span {
             color: var(--accent);
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
             margin-top: 10px;
             letter-spacing: 2px;
         }
@@ -103,7 +112,7 @@
             width: 1100px;
             height: 800px;
             border: none;
-            pointer-events: none; 
+            pointer-events: none;
             transform: scale(0.28);
             transform-origin: top left;
             position: absolute;
@@ -130,40 +139,51 @@
         }
 
         .back-bar {
-            height: 50px;
+            height: clamp(45px, 10vh, 60px);
             background: #111;
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            justify-content: space-between;
+            padding: 0 clamp(15px, 3vw, 20px);
             border-bottom: 1px solid #222;
-            position: relative; /* Added to allow absolute centering of the title */
+            gap: 15px;
+            flex-wrap: wrap;
+            position: relative; /* allow absolute centering of title */
         }
 
-        /* --- NEW TITLE STYLING --- */
         #tool-title {
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, -50%);
             font-weight: bold;
             letter-spacing: 2px;
             text-transform: uppercase;
             pointer-events: none;
-            font-size: 1.3rem;
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
             color: var(--accent);
             text-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+            text-align: center;
+            max-width: calc(100% - 160px); /* leave room for buttons on sides */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .back-btn {
             background: none;
             border: 1px solid var(--accent);
             color: var(--accent);
-            padding: 5px 15px;
+            padding: clamp(5px, 2vw, 10px) clamp(12px, 3vw, 15px);
             cursor: pointer;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
             transition: 0.2s;
             font-weight: bold;
-            z-index: 2; /* Ensures button stays clickable above the absolute title */
+            white-space: nowrap;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2; /* keep button above absolute title for clicks */
         }
 
         .back-btn:hover {
@@ -182,12 +202,47 @@
             transform: scale(0.9);
             opacity: 0;
         }
+
+        /* HINT SECTION */
+        .hint-box {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 6px;
+            padding: clamp(10px, 2vw, 15px);
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            color: var(--text-main);
+            text-align: center;
+            max-width: 600px;
+            display: none;
+        }
+
+        .hint-box.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            #hub-ui {
+                gap: 20px;
+                padding: 15px;
+            }
+
+            .cards-container {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .hint-box {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div id="hub-ui">
         <h1>TerraFirmaGreg Helper</h1>
+        
+        <div class="hint-box show">💡 Tip: Click a card to open the tool. On mobile, use portrait mode for best experience.</div>
         
         <div class="cards-container">
             <div class="card-anchor">
@@ -218,7 +273,7 @@
 
     <div id="tool-view" class="fullscreen-view">
         <div class="back-bar">
-            <button class="back-btn" onclick="shrinkTool()">← EXIT TO HUB</button>
+            <button class="back-btn" onclick="shrinkTool()">← EXIT</button>
             <span id="tool-title"></span>
         </div>
         <iframe id="active-frame" class="full-frame"></iframe>
@@ -234,11 +289,10 @@
             hub.classList.add('blur-out');
             activeFrame.src = name + ".html";
 
-            // Logic to update the title text
             if (name === 'alloy') {
-                toolTitle.textContent = "TerraFirmaGreg Alloy Calculator";
+                toolTitle.textContent = "Alloy Calculator";
             } else if (name === 'anvil') {
-                toolTitle.textContent = "TerraFirmaGreg Anvil Calculator";
+                toolTitle.textContent = "Anvil Calculator";
             }
 
             setTimeout(() => {

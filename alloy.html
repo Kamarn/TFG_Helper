@@ -21,7 +21,6 @@
         html, body {
             height: 100%;
             margin: 0;
-            overflow: hidden; 
         }
 
         body {
@@ -30,21 +29,21 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            padding: 15px;
+            padding: clamp(10px, 3vw, 15px);
             box-sizing: border-box;
+            overflow-y: auto;
         }
 
         .container {
             max-width: 1100px;
             width: 100%;
-            height: 100%;
             display: flex;
             flex-direction: column;
+            gap: 15px;
         }
 
         header {
             text-align: center;
-            padding-bottom: 15px;
             flex-shrink: 0;
         }
 
@@ -53,39 +52,53 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             margin: 0;
-            font-size: 1.8rem;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
             text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .dashboard {
             display: flex;
-            gap: 20px;
-            flex: 1;
-            min-height: 0; 
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .left-column {
-            flex: 0 0 340px;
+            flex: 0 1 100%;
             display: flex;
             flex-direction: column;
             gap: 15px;
+            min-height: 0;
         }
 
         .right-column {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+            min-width: 0;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard {
+                flex-wrap: nowrap;
+                gap: 20px;
+            }
+
+            .left-column {
+                flex: 0 0 340px;
+            }
+
+            .right-column {
+                flex: 1;
+            }
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            padding: clamp(12px, 3vw, 20px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         h3 {
@@ -93,12 +106,12 @@
             color: var(--accent);
             border-bottom: 1px solid var(--border);
             padding-bottom: 8px;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 2vw, 1rem);
             text-transform: uppercase;
         }
 
         .helper-text {
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 1.5vw, 0.8rem);
             color: var(--text-dim);
             margin-bottom: 5px;
         }
@@ -106,9 +119,10 @@
         /* ALLOY GRID */
         .alloy-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 8px;
             padding: 5px;
+            max-height: none;
             overflow-y: auto;
         }
 
@@ -119,8 +133,8 @@
         }
 
         .alloy-icon {
-            width: 60px;
-            height: 60px;
+            width: clamp(50px, 12vw, 60px);
+            height: clamp(50px, 12vw, 60px);
             margin: 0 auto;
             background-color: #2a2a2a;
             border: 2px solid transparent;
@@ -131,7 +145,7 @@
             image-rendering: pixelated;
         }
 
-        .alloy-item:hover .alloy-icon {
+        .alloy-item:active .alloy-icon {
             transform: scale(1.08);
             border-color: var(--accent);
         }
@@ -143,20 +157,22 @@
         }
 
         .alloy-name {
-            font-size: 10px;
-            margin-top: 5px;
+            font-size: clamp(0.65rem, 1.2vw, 10px);
+            margin-top: 3px;
             color: var(--text-dim);
             text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* INPUTS - NO ARROWS */
+        /* INPUTS */
         input[type="number"] {
             background: #2a2a2a;
             border: 1px solid var(--border);
             color: white;
-            padding: 10px;
+            padding: clamp(8px, 2vw, 10px);
             border-radius: 4px;
-            font-size: 1.4rem;
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
             width: 100%;
             box-sizing: border-box;
             text-align: center;
@@ -169,17 +185,24 @@
             margin: 0;
         }
 
-        /* MATERIAL LIST & SHAKE */
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* MATERIALS CONTAINER */
         .materials-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 10px 5px 5px; /* Increased top padding for first notice */
+            padding: clamp(5px, 2vw, 5px) 5px 5px 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .material {
-            margin-bottom: 12px;
             background: rgba(0,0,0,0.25);
-            padding: 12px 15px;
+            padding: clamp(8px, 2vw, 12px) clamp(10px, 2vw, 15px);
             border-radius: 6px;
             border-left: 4px solid var(--accent);
             position: relative;
@@ -202,28 +225,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            gap: 10px;
         }
 
         .material-name {
             font-weight: bold;
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            min-width: 0;
+            flex: 1;
         }
 
         .lock {
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
             opacity: 0.4;
             transition: opacity 0.2s;
             user-select: none;
+            flex-shrink: 0;
         }
 
         .lock.locked { opacity: 1; }
 
         input[type="range"] {
             width: 100%;
-            margin: 10px 0;
+            margin: 8px 0;
             accent-color: var(--accent);
             cursor: pointer;
         }
@@ -231,9 +258,11 @@
         .material-footer {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: clamp(0.7rem, 1.5vw, 0.85rem);
             color: var(--text-dim);
             font-family: 'Consolas', monospace;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .material.locked {
@@ -242,7 +271,6 @@
 
         .value { color: var(--success); font-weight: bold; }
 
-        /* WARNING NOTICES */
         .notice {
             position: absolute;
             top: -12px;
@@ -251,7 +279,7 @@
             color: white;
             padding: 2px 8px;
             border-radius: 3px;
-            font-size: 0.65rem;
+            font-size: clamp(0.6rem, 1.2vw, 0.65rem);
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             z-index: 100;
@@ -260,26 +288,66 @@
         }
 
         .summary-card {
-            margin-top: 15px;
+            margin-top: 10px;
             background: #000;
             border-left: 4px solid var(--success);
-            padding: 15px;
+            padding: clamp(10px, 2vw, 15px);
             border-radius: 4px;
             flex-shrink: 0;
         }
 
         .summary-text {
             font-family: 'Consolas', monospace;
-            font-size: 1.1rem;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
             color: var(--success);
             margin: 0;
         }
 
+        .hint-section {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 6px;
+            padding: clamp(10px, 2vw, 15px);
+            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                flex-direction: column;
+            }
+
+            .left-column {
+                flex: 0 1 auto;
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .alloy-grid {
+                grid-template-columns: repeat(4, 1fr);
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .material-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <header>
+        <div class="hint-section">
+            💡 <strong>How to use:</strong> Select desired ingots, choose an alloy, then adjust percentages using the sliders. Lock materials to keep them fixed. All calculations update in real-time.
+        </div>
+    </header>
+
     <div class="dashboard">
         <div class="left-column">
             <div class="card">
@@ -288,19 +356,19 @@
                 <input type="number" id="ingots" min="1" value="1">
             </div>
 
-            <div class="card" style="flex: 1; min-height: 0;">
+            <div class="card" style="flex: 1; min-height: 200px;">
                 <h3>Select Alloy</h3>
                 <div class="alloy-grid" id="alloyGrid"></div>
             </div>
         </div>
 
         <div class="right-column">
-            <div class="card" style="flex: 1; min-height: 0;">
+            <div class="card" style="flex: 1; min-height: 300px;">
                 <h3>Optimal Proportions</h3>
                 <div id="materials" class="materials-container"></div>
 
                 <div class="summary-card">
-                    <p class="summary-text">TOTAL VOLUME: <span id="totalMb">144</span> mB</p>
+                    <p class="summary-text">TOTAL: <span id="totalMb">144</span> mB</p>
                 </div>
             </div>
         </div>
@@ -410,7 +478,7 @@ function onSliderChange(changedKey) {
         state = prev;
         if (!invalidSliders.has(changedKey)) {
             invalidSliders.add(changedKey);
-            showBlockedFeedback(changedKey, "REACHED LIMIT");
+            showBlockedFeedback(changedKey, "LIMIT");
         }
     } else {
         if (invalidSliders.has(changedKey)) {
@@ -421,13 +489,6 @@ function onSliderChange(changedKey) {
     refreshUI();
 }
 
-/**
- * SMART REBALANCE LOGIC:
- * 1. Calculate how much percentage is missing/extra to hit 100% total.
- * 2. Identify all "Adjustable" sliders (unlocked and NOT the one being moved).
- * 3. Distribute the difference across ALL adjustable sliders proportionally
- * based on how much "headroom" (to max) or "floor" (to min) they have left.
- */
 function tryRebalance(changedKey) {
     const adjustable = [];
     let fixedSum = state[changedKey].percent;
@@ -443,24 +504,21 @@ function tryRebalance(changedKey) {
     
     if (diff === 0) return true;
 
-    // First, check if a solution is even theoretically possible
     let minSum = 0, maxSum = 0;
     adjustable.forEach(k => { minSum += state[k].min; maxSum += state[k].max; });
     const targetAdjustableSum = 100 - fixedSum;
     if (targetAdjustableSum < minSum || targetAdjustableSum > maxSum) return false;
 
-    // Iterative distribution to handle multiple sliders hitting limits
     let attempts = 0;
     while (Math.abs(diff) > 0 && attempts < 10) {
         let totalRoom = 0;
         
-        // Calculate total available room in the direction of change
         adjustable.forEach(k => {
             const room = (diff > 0) ? (state[k].max - state[k].percent) : (state[k].percent - state[k].min);
             totalRoom += room;
         });
 
-        if (totalRoom === 0 && Math.abs(diff) > 0) return false; // No more room to move anything
+        if (totalRoom === 0 && Math.abs(diff) > 0) return false;
 
         let distributedThisTurn = 0;
         adjustable.forEach(k => {
@@ -485,7 +543,7 @@ function tryRebalance(changedKey) {
 function showBlockedFeedback(key, msg) {
     const row = document.querySelector(`[data-name="${key}"]`);
     row.classList.remove('invalid');
-    void row.offsetWidth; // Reflow trigger for shake
+    void row.offsetWidth;
     row.classList.add('invalid');
     let notice = row.querySelector('.notice') || document.createElement('div');
     notice.className = 'notice';
